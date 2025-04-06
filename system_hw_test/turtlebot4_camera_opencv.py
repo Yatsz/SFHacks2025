@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 import zenoh
+import os
 
 
 def listener(sample):
@@ -19,7 +20,8 @@ def listener(sample):
 if __name__ == "__main__":
 
     with zenoh.open(zenoh.Config()) as session:
-        camera = session.declare_subscriber("pi/oakd/rgb/preview/image_raw", listener)
+        urid = os.getenv("URID") 
+        camera = session.declare_subscriber(f"{urid}/pi/oakd/rgb/preview/image_raw", listener)
         print("Zenoh is open")
         while True:
             print("Waiting for camera messages")

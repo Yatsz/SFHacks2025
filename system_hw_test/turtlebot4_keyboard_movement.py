@@ -44,7 +44,7 @@ class MoveController:
         self.session = None
         # Get URID from environment variable
         urid = os.getenv("URID")  # Default as fallbackw
-        print
+        
         self.cmd_vel = f"{urid}/c3/cmd_vel"
         try:
             self.session = zenoh.open(zenoh.Config())

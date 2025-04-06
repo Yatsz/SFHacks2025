@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 # Fix the import to use a relative import within the same package
-from .face_detector import FaceDetector
+from face_detector import FaceDetector
 
 def test_webcam_detection(camera_id=0, confidence=0.5, display_fps=True):
     """
