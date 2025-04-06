@@ -2,7 +2,12 @@ import logging
 import sys
 import threading
 import time
+import os
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 import zenoh
 from pycdr2 import IdlStruct
@@ -37,7 +42,10 @@ class Twist(IdlStruct, typename="Twist"):
 class MoveController:
     def __init__(self):
         self.session = None
-        self.cmd_vel = "cmd_vel"
+        # Get URID from environment variable
+        urid = os.getenv("URID")  # Default as fallbackw
+        print
+        self.cmd_vel = f"{urid}/c3/cmd_vel"
         try:
             self.session = zenoh.open(zenoh.Config())
             logging.info("Zenoh client opened")
