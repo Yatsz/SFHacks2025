@@ -12,6 +12,7 @@ data/
 
 # Virtual environments
 .venv
+venv
 
 # Environment variables
 .env

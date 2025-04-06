@@ -136,9 +136,11 @@ export default function FamilyProfile() {
 
       {/* Main Content */}
       <div className="px-[70px] mt-[110px]">
-        <div className="flex items-center justify-end mb-4">
-          <span className="text-gray-600">Admin</span>
-        </div>
+        {member.name === "Michelle Feng" && (
+          <div className="flex items-center justify-end mb-4">
+            <span className="text-gray-600">Admin</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-12 gap-8">
           {/* Left Column */}

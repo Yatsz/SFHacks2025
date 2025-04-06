@@ -1,6 +1,6 @@
-# Frontend / Mobile App / Backend is made from Scratch
+# Frontend / Mobile App / Facial Recognition is made from Scratch
 
-Everything besides the OM1 Folder has been made from scratch
+The frontend folder, mobile app folder, and facial recognition folder inside OM1 folder are made from scratch
 
 # Fork of OM1 for SFHacks 2025 Project
 
