@@ -94,13 +94,10 @@ class MoveZenohConnector(ActionConnector[MoveInput]):
             self.pub_twist(0.5, 0.0)
         elif output_interface.action == "move back":
             logging.info(f"Zenoh command: {output_interface.action}")
-            self.pub_twist(-0.5, 0)
-        elif output_interface.action == "avoid left obstacle":
+            self.pub_twist(-0.5, 0.0)
+        elif output_interface.action == "spin around":
             logging.info(f"Zenoh command: {output_interface.action}")
-            self.pub_twist(0, 0.8)
-        elif output_interface.action == "avoid right obstacle":
-            logging.info(f"Zenoh command: {output_interface.action}")
-            self.pub_twist(0, -0.8)
+            self.pub_twist(0.0, 0.8)
         elif output_interface.action == "stand still":
             logging.info(f"Zenoh command: {output_interface.action}")
             # do nothing
