@@ -1,207 +1,256 @@
+'use client';
+
 import Image from 'next/image';
-import { RobotIcon } from '@/app/components/RobotIcon';
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getAllFamilyMembers } from '@/lib/firebase/services/familyService';
+
+interface FamilyMemberData {
+  name: string;
+  relationship: string;
+  nicknames: string[];
+  audioMessages: {
+    title: string;
+    addedTime: string;
+  }[];
+  reminders: {
+    message: string;
+    requestedBy: string;
+  }[];
+  image: string;
+}
+
+const getMemberIdByName = (name: string): string => {
+  switch (name) {
+    case "Michelle Feng":
+      return "member1";
+    case "Daniel Kim":
+      return "member2";
+    default:
+      return "member1";
+  }
+};
+
+const familyData: Record<string, FamilyMemberData> = {
+  "member1": {
+    name: "Michelle Feng",
+    relationship: "Jenny's Granddaughter",
+    nicknames: ["Mishy", "Love"],
+    audioMessages: [
+      { title: "Let's go dancing soon! I miss you Grandma", addedTime: "3 hrs ago" },
+      { title: "Hi Grandma! I love you mwah mwah", addedTime: "3 days ago" }
+    ],
+    reminders: [
+      { message: "Reminder for her to attend brunch April 7 at 12pm", requestedBy: "Daniel" },
+      { message: "Reminder for her to wash her hair next Monday", requestedBy: "Lia" }
+    ],
+    image: ""
+  },
+  "member2": {
+    name: "Daniel Kim",
+    relationship: "Jenny's Grandson",
+    nicknames: ["Dan", "Danny"],
+    audioMessages: [
+      { title: "Grandma, remember to take your medicine!", addedTime: "1 hr ago" },
+      { title: "I'll visit you this weekend!", addedTime: "2 days ago" }
+    ],
+    reminders: [
+      { message: "Reminder to take evening medication", requestedBy: "Michelle" },
+      { message: "Doctor's appointment next Tuesday", requestedBy: "Daniel" }
+    ],
+    image: ""
+  }
+};
 
 export default function FamilyProfile() {
-  return (
-    <div className="min-h-screen bg-[#F9F4F2]">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-4">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <RobotIcon className="w-6 h-6" />
-            <span className="text-xl font-semibold">Remi</span>
-          </Link>
-          <div className="flex gap-8">
-            <Link href="/memory-bank" className="border-b-2 border-black">Memory Bank</Link>
-            <Link href="/schedule">Schedule</Link>
-            <Link href="/robot-status">Robot Status</Link>
-            <Link href="/summary">Summary</Link>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="bg-[#8CD7F3] text-black px-4 py-1.5 rounded-full text-sm">
-            + Add
-          </button>
-          <button>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 22C10.8954 22 10 21.1046 10 20H14C14 21.1046 13.1046 22 12 22ZM20 19H4V17L6 16V10.5C6 7.038 7.421 4.793 10 4.18V2H14V4.18C16.579 4.793 18 7.038 18 10.5V16L20 17V19Z" fill="currentColor"/>
-            </svg>
-          </button>
-        </div>
-      </nav>
+  const searchParams = useSearchParams();
+  const name = searchParams.get('name');
+  const memberId = name ? getMemberIdByName(name) : 'member1';
+  const [member, setMember] = useState(familyData[memberId]);
 
-      {/* Hero Banner */}
-      <div className="mx-8 mt-4 rounded-2xl overflow-hidden">
-        <div className="relative h-48 bg-gradient-to-r from-blue-200 to-pink-100">
+  useEffect(() => {
+    const fetchMemberData = async () => {
+      try {
+        const members = await getAllFamilyMembers();
+        const currentMember = members.find(m => m.name === name);
+        if (currentMember) {
+          setMember({
+            ...familyData[memberId],
+            image: currentMember.image || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching member data:', error);
+      }
+    };
+
+    fetchMemberData();
+  }, [name, memberId]);
+
+  if (!member) {
+    return <div>Member not found</div>;
+  }
+
+  return (
+    <div className="min-h-screen px-[70px]" style={{ backgroundColor: '#F9F4F2' }}>
+      {/* Banner Container */}
+      <div className="relative w-full h-[225px]">
+        {/* Banner Image Container */}
+        <div className="absolute inset-0 rounded-t-[10px] overflow-hidden z-0">
           <Image
-            src="/hero-background.jpg"
-            alt="Background"
+            src={memberId === 'member1' ? '/bg1.png' : '/bg2.png'}
+            alt="Banner"
             fill
-            className="object-cover mix-blend-overlay"
-            priority
+            className="object-cover"
           />
+        </div>
+        {/* Profile Picture and Info */}
+        <div className="absolute -bottom-[90px] left-[70px] z-10 flex items-end gap-6">
+          {/* Profile Picture */}
+          {member.image ? (
+            <div 
+              className="w-[140px] h-[140px] rounded-[10px] bg-cover bg-center shadow-md"
+              style={{ 
+                backgroundImage: `url(data:image/jpeg;base64,${member.image})`,
+                backgroundPosition: '50% 30%'
+              }}
+            />
+          ) : (
+            <div className="w-[140px] h-[140px] rounded-[10px] shadow-md bg-gray-200 flex items-center justify-center">
+              <span className="text-2xl font-semibold text-gray-600">
+                {member.name.split(' ').map(n => n[0]).join('')}
+              </span>
+            </div>
+          )}
+          
+          {/* Name and Relationship */}
+          <div className="flex items-end gap-4 pb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-black mb-1">{member.name}</h1>
+              <p className="text-gray-600">{member.relationship}</p>
+            </div>
+            <Image src="/speaker.svg" alt="Speaker" width={24} height={24} className="mb-1" />
+          </div>
         </div>
       </div>
 
-      {/* Profile Section */}
-      <div className="px-8">
-        <div className="flex items-start -mt-16 mb-8">
-          <div className="relative w-32 h-32 rounded-lg overflow-hidden border-4 border-white bg-white">
-            <Image
-              src="/cam-profile.jpg"
-              alt="Cam Nafarrate"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="ml-6 mt-16 flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold">Cam Nafarrate</h1>
-              <button>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3 18V12H7V18H3ZM10 18V6H14V18H10ZM17 18V10H21V18H17Z"/>
-                </svg>
-              </button>
-            </div>
-            <span className="bg-[#6B6B6B] text-white px-3 py-1 rounded-full text-sm">Admin</span>
-          </div>
+      {/* Main Content */}
+      <div className="px-[70px] mt-[110px]">
+        <div className="flex items-center justify-end mb-4">
+          <span className="text-gray-600">Admin</span>
         </div>
-        <p className="text-gray-600 mb-8">Jenny's Husband</p>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-12 gap-8">
           {/* Left Column */}
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <div className="bg-white rounded-lg p-6">
-              <h2 className="text-lg font-semibold mb-1">Basic Information</h2>
+          <div className="col-span-4">
+            <div className="bg-white rounded-lg p-6 mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.1)] min-h-[280px]">
+              <h2 className="text-lg font-semibold mb-2">Basic Information</h2>
               <p className="text-sm text-gray-500 mb-4">This section is about you</p>
+              
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium">Name:</p>
-                  <p className="text-sm">Cam Nafarrate</p>
+                  <p className="text-sm text-gray-500">Name:</p>
+                  <p className="font-medium">{member.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Relationship:</p>
-                  <p className="text-sm">Jenny's Husband</p>
+                  <p className="text-sm text-gray-500">Relationship:</p>
+                  <p className="font-medium">{member.relationship}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Nicknames:</p>
-                  <p className="text-sm">Hubby, Honey</p>
+                  <p className="text-sm text-gray-500">Nicknames:</p>
+                  <p className="font-medium">{member.nicknames.join(", ")}</p>
                 </div>
               </div>
             </div>
 
-            {/* Photo Album */}
-            <div className="bg-white rounded-lg p-6">
-              <div className="flex justify-between items-center mb-1">
+            <div className="bg-white rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold">Photo Album</h2>
-                <button className="text-sm bg-[#8CD7F3] text-black px-4 py-1.5 rounded-full">+ Add</button>
+                <button className="text-sm px-4 py-1 bg-gray-100 rounded-full">+ Add</button>
               </div>
-              <p className="text-sm text-gray-500 mb-4">Photo memories of you and Jenny</p>
               <div className="grid grid-cols-3 gap-2">
-                <div className="aspect-square relative rounded-lg overflow-hidden">
-                  <Image src="/photo1.jpg" alt="Memory 1" fill className="object-cover" />
-                </div>
-                <div className="aspect-square relative rounded-lg overflow-hidden">
-                  <Image src="/photo2.jpg" alt="Memory 2" fill className="object-cover" />
-                </div>
-                <div className="aspect-square relative rounded-lg overflow-hidden">
-                  <Image src="/photo3.jpg" alt="Memory 3" fill className="object-cover" />
-                </div>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="aspect-square relative">
+                    <Image
+                      src={memberId === 'member1' ? `/sample${i}.png` : `/sample${i + 3}.png`}
+                      alt={`Photo ${i}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Middle Column */}
+          <div className="col-span-4">
+            <div className="bg-white rounded-lg p-6 mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.1)] min-h-[280px] flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Audio Album</h2>
+                <button className="text-sm px-4 py-1 bg-gray-100 rounded-full">+ Add</button>
+              </div>
+              <div className="space-y-3 flex-grow">
+                {member.audioMessages.map((message, index) => (
+                  <div key={index} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
+                    <Image src="/play.svg" alt="Play" width={24} height={24} />
+                    <div>
+                      <p className="text-sm font-medium">{message.title}</p>
+                      <p className="text-xs text-gray-500">Added {message.addedTime}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Recent Album</h2>
+                <button className="text-sm px-4 py-1 bg-gray-100 rounded-full">+ Add</button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="aspect-square relative">
+                    <Image
+                      src={memberId === 'member1' ? `/sample${i}.png` : `/sample${i + 3}.png`}
+                      alt={`Recent Photo ${i}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
-            {/* Audio Album */}
-            <div className="bg-white rounded-lg p-6">
-              <div className="flex justify-between items-center mb-1">
-                <h2 className="text-lg font-semibold">Audio Album</h2>
-                <button className="text-sm bg-[#8CD7F3] text-black px-4 py-1.5 rounded-full">+ Add</button>
+          <div className="col-span-4">
+            <div className="bg-white rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Routine & Reminders</h2>
+                <p className="text-sm text-gray-500">Approve new routines & reminders as admin</p>
               </div>
-              <p className="text-sm text-gray-500 mb-4">Record voice memos for Jenny</p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <button className="bg-[#8CD7F3] p-2 rounded-full">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8 5V19L19 12L8 5Z"/>
-                    </svg>
-                  </button>
-                  <div>
-                    <p className="text-sm font-medium">Hi honey, did you enjoy your lunch today?</p>
-                    <p className="text-xs text-gray-500">Added 5 hrs ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button className="bg-[#8CD7F3] p-2 rounded-full">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8 5V19L19 12L8 5Z"/>
-                    </svg>
-                  </button>
-                  <div>
-                    <p className="text-sm font-medium">Have an amazing morning brunch. I love you</p>
-                    <p className="text-xs text-gray-500">Added 3 days ago</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Album */}
-            <div className="bg-white rounded-lg p-6">
-              <div className="flex justify-between items-center mb-1">
-                <h2 className="text-lg font-semibold">Recent Album</h2>
-                <button className="text-sm bg-[#8CD7F3] text-black px-4 py-1.5 rounded-full">+ Add</button>
-              </div>
-              <p className="text-sm text-gray-500 mb-4">Recent photos of you and Jenny</p>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="aspect-square relative rounded-lg overflow-hidden">
-                  <Image src="/recent1.jpg" alt="Recent 1" fill className="object-cover" />
-                </div>
-                <div className="aspect-square relative rounded-lg overflow-hidden">
-                  <Image src="/recent2.jpg" alt="Recent 2" fill className="object-cover" />
-                </div>
-                <div className="aspect-square relative rounded-lg overflow-hidden">
-                  <Image src="/recent3.jpg" alt="Recent 3" fill className="object-cover" />
-                </div>
-              </div>
-            </div>
-
-            {/* Routine & Reminders */}
-            <div className="bg-white rounded-lg p-6">
-              <h2 className="text-lg font-semibold mb-1">Routine & Reminders</h2>
-              <p className="text-sm text-gray-500 mb-4">Approve new routines & reminders as admin</p>
               <div className="space-y-3">
-                <div className="flex items-center justify-between border rounded-lg p-3">
-                  <div>
-                    <p className="text-sm">Reminder for her to attend brunch April 7 at 12pm</p>
-                    <p className="text-xs text-gray-500">Requested by Max</p>
+                {member.reminders.map((reminder, index) => (
+                  <div key={index} className="flex items-center justify-between bg-gray-50 px-2 py-3 rounded-lg">
+                    <div>
+                      <p className="text-sm">{reminder.message}</p>
+                      <p className="text-xs text-gray-500">Requested by {reminder.requestedBy}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Image src="/no.svg" alt="Decline" width={24} height={24} className="cursor-pointer" />
+                      <Image src="/yes.svg" alt="Accept" width={24} height={24} className="cursor-pointer" />
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button className="text-red-500 hover:text-red-600">✕</button>
-                    <button className="text-green-500 hover:text-green-600">✓</button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border rounded-lg p-3">
-                  <div>
-                    <p className="text-sm">Reminder for her to wash her hair next Monday</p>
-                    <p className="text-xs text-gray-500">Requested by Emma</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="text-red-500 hover:text-red-600">✕</button>
-                    <button className="text-green-500 hover:text-green-600">✓</button>
-                  </div>
-                </div>
+                ))}
               </div>
-              <div className="flex gap-2 mt-4">
+              <div className="mt-4 flex gap-2">
                 <input
                   type="text"
                   placeholder="Message"
                   className="flex-1 border rounded-full px-4 py-2 text-sm"
                 />
-                <button className="bg-[#8CD7F3] text-black px-4 py-2 rounded-full text-sm">
+                <button className="px-6 py-2 bg-[#8CD7F3] text-black rounded-full text-sm">
                   Add
                 </button>
               </div>
