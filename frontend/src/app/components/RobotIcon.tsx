@@ -2,26 +2,20 @@ interface RobotIconProps {
   className?: string;
 }
 
-export function RobotIcon({ className = "" }: RobotIconProps) {
+export function RobotIcon({ className }: RobotIconProps) {
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
+    <svg
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <g 
-        fill="none" 
-        stroke="currentColor" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth="1.5" 
-        color="currentColor"
-      >
-        <path d="M19 16v-2c0-2.828 0-4.243-.879-5.121C17.243 8 15.828 8 13 8h-2c-2.828 0-4.243 0-5.121.879C5 9.757 5 11.172 5 14v2c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16m0 2c1.414 0 2.121 0 2.56-.44c.44-.439.44-1.146.44-2.56s0-2.121-.44-2.56C21.122 12 20.415 12 19 12M5 18c-1.414 0-2.121 0-2.56-.44C2 17.122 2 16.415 2 15s0-2.121.44-2.56C2.878 12 3.585 12 5 12m8.5-8.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 0 1 3 0M12 5v3m-3 5v1m6-1v1" />
-        <path d="M10 17.5s.667.5 2 .5s2-.5 2-.5" />
-      </g>
+      <path
+        d="M12 3C10.9 3 10 3.9 10 5V7H14V5C14 3.9 13.1 3 12 3M18 7H16V5C16 2.8 14.2 1 12 1C9.8 1 8 2.8 8 5V7H6C4.9 7 4 7.9 4 9V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V9C20 7.9 19.1 7 18 7M12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17Z"
+        fill="currentColor"
+      />
     </svg>
   );
 } 
